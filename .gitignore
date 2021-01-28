@@ -1,0 +1,15 @@
+vecs/
+venv/
+opencv/
+samples/
+annotations/
+stage_outputs/
+negative_images/
+positive_images/
+.vscode/
+.venv
+*.MOV
+*.vec
+*.jpg
+*.png
+*.avi
