@@ -5,6 +5,7 @@ import argparse as ap
 import numpy as np
 import cv2 as cv
 import os
+import sys
 
 class CustomFormatter(ap.HelpFormatter):
     def _format_action_invocation(self, action):
@@ -32,8 +33,10 @@ parser.add_argument("-i", "--img", metavar='', help="specify image to be classif
 parser.add_argument("-d", "--dir", metavar='', help="specify directory of images to be classified")
 parser.add_argument("-v", "--vid", metavar='', help="specify video to be classified")
 parser.add_argument("-w", "--cam", metavar='', help="enable camera access for classification")
+parser.add_argument("-t", "--tra", help="enable tracking algorithm", choices=['KCF', 'CSRT', 'MEDIANFLOW'])
+parser.add_argument("-f", "--fps", help="enable frames text", action="store_true")
 parser.add_argument("-o", "--cir", help="enable circle detection", action="store_true")
-args = parser.parse_args()
+args = parser.parse_args(sys.argv[1:])
 
 # Load the trained cascade
 cascade = cv.CascadeClassifier()
@@ -64,6 +67,17 @@ def detect_circles(src):
             cv.circle(img, center, radius, (255, 0, 255), 3)
     
     return img
+
+def tracking():
+    
+    OPENCV_TRACKERS = {
+        'KCF': cv.TrackerKCF_create(),
+        'CSRT': cv.TrackerCSRT_create(),
+        'MEDIANFLOW': cv.TrackerMedianFlow_create()
+    }
+
+    tracker = OPENCV_TRACKERS[args.tra]
+    return tracker
 
 def img_classifier():
     # Read image, convert to gray, equalize histogram, and detect.
@@ -108,48 +122,61 @@ def dir_classifier():
 def vid_classifier():
     vid = cv.VideoCapture(args.vid)
     fourcc = cv.VideoWriter_fourcc(*'XVID')
+
+    if not vid.isOpened():
+        print("Could not open video")
+        sys.exit()
+    
+    # Read the first frame 
     _ , frame = vid.read()
+
+    if not _:
+        print('Cannot read video file')
+        sys.exit()
 
     if args.save is not None and _ is True:
         # Need dimensions of frame to get proper video output
         height, width, channels = frame.shape
         out = cv.VideoWriter(args.save + '.avi', fourcc, 20.0, (width, height))
 
+    if args.tra is not None and _ is True:
+        # Get initial bounding box
+        frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
+        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10, minSize=(400, 400))
+        #roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
+        roi = (300, 50, 90, 350)
+        tracker = tracking()
+        tracker.init(frame, roi)
+ 
     while(vid.isOpened()):
-        # read() returns a tuple; _ indicates if frame was obtained with success 
         _ , frame = vid.read()
+        frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
+        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10, minSize=(400, 400))
 
-        width = vid.get(3)   # float `width`
-        height = vid.get(4)  # float `height`
+        for (x, y, w, h) in cas_object:
+            roi = cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
+        
+        if args.tra is not None:
+            ok, frame = vid.read()
+            ok, roi = tracker.update(frame)
+            if ok:
+                p1 = (int(roi[0]), int(roi[1]))
+                p2 = (int(roi[0] + roi[2]), int(roi[1] + roi[3]))
+                cv.rectangle(frame, p1, p2, (255,0,0), 2, 1)
+                
+        cv.imshow('video', frame)
 
-        # Convert BGR to HSV
-        if _ is True:
-            vid_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            vid_gray = cv.GaussianBlur(vid_gray, (3, 3), 0)
-            cas_object = cascade.detectMultiScale(vid_gray, minNeighbors=10, minSize=(400, 400))
+        if args.save is not None:
+            out.write(frame)
 
-            for (x, y, w, h) in cas_object:
-                roi = cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
-
-                if args.cir is True:
-                    roi = frame[y:y+h, x:x+w]
-                    frame = detect_circles(roi)
-
-            cv.imshow('video', frame)
-
-            if args.save is not None:
-                out.write(frame)
-
-            if cv.waitKey(40) & 0xFF == ord('q'):
-                break
-        else:
+        if cv.waitKey(1) & 0xFF == ord('q'):
             break
-
-    vid.release()
 
     if args.save is not None:
         out.release()
-    
+    vid.release()
     cv.destroyAllWindows()
 
 def cam_classifier():

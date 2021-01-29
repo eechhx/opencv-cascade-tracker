@@ -3,6 +3,8 @@ Training our own Haar Cascade in OpenCV with Python. A cascade classifier has mu
 
 There are many different types of tracking algorithms that are available through `opencv_contrib/tracking`, such as KCF, MOSSE, TLD, CSRT, etc. Here's a [good video](https://www.youtube.com/watch?v=61QjSz-oLr8) that demonstrates some of these tracking algorithms. Depending on your use case, the one you choose will differ.
 
+## Jump to Section
+
 * [Prerequisites](#prerequisites)
 * [Image Scraping](#image_scraping)
 * [Postive & Negative Image Sets](#positive-&-negative-image-sets)
