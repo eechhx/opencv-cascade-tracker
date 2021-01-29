@@ -33,9 +33,10 @@ parser.add_argument("-i", "--img", metavar='', help="specify image to be classif
 parser.add_argument("-d", "--dir", metavar='', help="specify directory of images to be classified")
 parser.add_argument("-v", "--vid", metavar='', help="specify video to be classified")
 parser.add_argument("-w", "--cam", metavar='', help="enable camera access for classification")
-parser.add_argument("-t", "--tra", help="enable tracking algorithm", choices=['KCF', 'CSRT', 'MEDIANFLOW'])
 parser.add_argument("-f", "--fps", help="enable frames text", action="store_true")
-parser.add_argument("-o", "--cir", help="enable circle detection", action="store_true")
+parser.add_argument("-o", "--circle", help="enable circle detection", action="store_true")
+parser.add_argument("-z", "--scale", metavar='', help="decrease video scale by scale factor", type=int, default=1)
+parser.add_argument("-t", "--track", metavar='', help="select tracking algorithm [KCF, CSRT, MEDIANFLOW]", choices=['KCF', 'CSRT', 'MEDIANFLOW'])
 args = parser.parse_args(sys.argv[1:])
 
 # Load the trained cascade
@@ -76,8 +77,15 @@ def tracking():
         'MEDIANFLOW': cv.TrackerMedianFlow_create()
     }
 
-    tracker = OPENCV_TRACKERS[args.tra]
+    tracker = OPENCV_TRACKERS[args.track]
     return tracker
+
+def scale(frame, scale_factor):
+    height, width, channels = frame.shape
+    scaled_height = int(height/scale_factor)
+    scaled_width = int(width/scale_factor)
+    resized_frame = cv.resize(frame, (scaled_width, scaled_height))
+    return resized_frame
 
 def img_classifier():
     # Read image, convert to gray, equalize histogram, and detect.
@@ -89,7 +97,7 @@ def img_classifier():
     for (x, y, w, h) in cas_object:
         roi = cv.rectangle(img, (x,y), (x+w, y+h), (0,0,255), 2)
 
-        if args.cir is True:
+        if args.circle is True:
             roi = img[y:y+h, x:x+w]
             img = detect_circles(roi)
 
@@ -109,7 +117,7 @@ def dir_classifier():
             for (x, y, w, h) in cas_object:
                 cv.rectangle(img, (x,y), (x+w, y+h), (0,0,255), 2)
 
-                if args.cir is True:
+                if args.circle is True:
                     roi = img[y:y+h, x:x+w]
                     img = detect_circles(roi)
 
@@ -129,6 +137,7 @@ def vid_classifier():
     
     # Read the first frame 
     _ , frame = vid.read()
+    frame = scale(frame, args.scale)
 
     if not _:
         print('Cannot read video file')
@@ -137,29 +146,31 @@ def vid_classifier():
     if args.save is not None and _ is True:
         # Need dimensions of frame to get proper video output
         height, width, channels = frame.shape
-        out = cv.VideoWriter(args.save + '.avi', fourcc, 20.0, (width, height))
+        out = cv.VideoWriter(args.save + '.avi', fourcc, 30.0, (width, height))
 
-    if args.tra is not None and _ is True:
+    if args.track is not None and _ is True:
         # Get initial bounding box
         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
-        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10, minSize=(400, 400))
-        #roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
-        roi = (300, 50, 90, 350)
+        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
+        roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
+        #roi = (300, 50, 90, 350)
         tracker = tracking()
         tracker.init(frame, roi)
  
     while(vid.isOpened()):
         _ , frame = vid.read()
+        frame = scale(frame, args.scale)
         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
-        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10, minSize=(400, 400))
+        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
 
         for (x, y, w, h) in cas_object:
             roi = cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
         
-        if args.tra is not None:
+        if args.track is not None:
             ok, frame = vid.read()
+            frame = scale(frame, args.scale)
             ok, roi = tracker.update(frame)
             if ok:
                 p1 = (int(roi[0]), int(roi[1]))

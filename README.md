@@ -112,18 +112,22 @@ Each row of the training output for each stage represents a feature that's being
 To test how well our cascade performs, run the `classifier.py` script. 
 
 ```
-usage: classifier.py [-h] [-s] [-c] [-i] [-d] [-v] [-w] [-o]
+usage: classifier.py [-h] [-s] [-c] [-i] [-d] [-v] [-w] [-f] [-o] [-z] [-t]
 
 Cascade Classifier
 
 optional arguments:
-  -h, --help   show this help message and exit
-  -s, --save   specify output name
-  -c, --cas    specify specific trained cascade
-  -i, --img    specify image to be classified
-  -d, --dir    specify directory of images to be classified
-  -v, --vid    specify video to be classified
-  -w, --cam    enable camera access for classification
+  -h, --help    show this help message and exit
+  -s, --save    specify output name
+  -c, --cas     specify specific trained cascade
+  -i, --img     specify image to be classified
+  -d, --dir     specify directory of images to be classified
+  -v, --vid     specify video to be classified
+  -w, --cam     enable camera access for classification
+  -f, --fps     enable frames text
+  -o, --circle  enable circle detection
+  -z, --scale   decrease video scale by scale factor
+  -t, --track   select tracking algorithm [KCF, CSRT, MEDIANFLOW]
 ```
 
 For example, to run a video through the classifier and save the output:
