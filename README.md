@@ -1,4 +1,4 @@
-# OpenCV - Training, Detection (Haar Cascades), and Tracking
+# Training, Classifying (Haar Cascades), and Tracking
 Training our own Haar Cascade in OpenCV with Python. A cascade classifier has multiple stages of filtration. Using a sliding window approach, the image region within the window goes through the cascade. Can easily test accuracy of cascade with `classifier.py` script, which takes single images, directory of images, videos, and camera inputs. However, we want to also track our ROI (region of interest). This is because detection (through cascades, etc) is in general, more consuming and computationally taxing. Tracking algorithms are generally considered less taxing, because you know a lot about the apperance of the object in the ROI already. Thus, in the next frame, you use the information from the previous frame to predict and localize where the object is in the frames after.
 
 There are many different types of tracking algorithms that are available through `opencv_contrib/tracking`, such as KCF, MOSSE, TLD, CSRT, etc. Here's a [good video](https://www.youtube.com/watch?v=61QjSz-oLr8) that demonstrates some of these tracking algorithms. Depending on your use case, the one you choose will differ.
@@ -15,8 +15,8 @@ There are many different types of tracking algorithms that are available through
 
 ## Prerequisites
 * Ubuntu 18.04 
-* OpenCV 4.5.1
-* OpenCV_contrib (branch parallel with OpenCV 4.5.1)
+* OpenCV 4.4.0
+* OpenCV Contrib (branch parallel with OpenCV 4.4.0)
 
 I used a Python virtual environment for package management. You can build and install OpenCV from source in the virtual environment (especially if you want a specific development branch or full control of compile options), or you can use `pip` locally in the `venv`. Packages included are shown in the `requirements.txt` file for reproducing the specific environment.
 
