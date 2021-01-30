@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
 import argparse as ap
@@ -52,10 +52,9 @@ def detect_circles(src):
     img = src
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     img_blur = cv.medianBlur(img_gray, 5)
-
     rows = img_blur.shape[0]
-    #Images circles = cv.HoughCircles(img_blur, cv.HOUGH_GRADIENT, 1, rows / 3, param1=100, param2=40)
-    circles = cv.HoughCircles(img_blur, cv.HOUGH_GRADIENT, 1, rows / 4, param1=100, param2=40, maxRadius=40)  
+    #Images circles = cv.HoughCircles(img_blur, cv.HOUGH_GRADIENT, 1, rows / 3, param1=100, param2=40, maxRadius=40)
+    circles = cv.HoughCircles(img_blur, cv.HOUGH_GRADIENT, 1, rows/3, param1=100, param2=15, minRadius=10, maxRadius=15)  
 
     if circles is not None:
         circles = np.uint16(np.around(circles))
@@ -70,13 +69,11 @@ def detect_circles(src):
     return img
 
 def tracking():
-    
     OPENCV_TRACKERS = {
         'KCF': cv.TrackerKCF_create(),
         'CSRT': cv.TrackerCSRT_create(),
         'MEDIANFLOW': cv.TrackerMedianFlow_create()
     }
-
     tracker = OPENCV_TRACKERS[args.track]
     return tracker
 
@@ -140,7 +137,7 @@ def vid_classifier():
     frame = scale(frame, args.scale)
 
     if not _:
-        print('Cannot read video file')
+        print("Cannot read video file")
         sys.exit()
 
     if args.save is not None and _ is True:
@@ -172,11 +169,16 @@ def vid_classifier():
             ok, frame = vid.read()
             frame = scale(frame, args.scale)
             ok, roi = tracker.update(frame)
+
             if ok:
                 p1 = (int(roi[0]), int(roi[1]))
                 p2 = (int(roi[0] + roi[2]), int(roi[1] + roi[3]))
                 cv.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-                
+
+        if args.circle is True:
+            roi_circle = frame[int(roi[1]):int(roi[1] + roi[3]), int(roi[0]):int(roi[0] + roi[2])]
+            frame = detect_circles(roi_circle)    
+        
         cv.imshow('video', frame)
 
         if args.save is not None:

@@ -132,7 +132,7 @@ optional arguments:
 
 For example, to run a video through the classifier and save the output:
 ```
-./classifier.py -v ~/video_input.MOV -s ~/video_output
+./classifier.py -v ~/video_input.MOV -s ~/video_output -z 2 -t KCF
 ```
 
 ## Video Conversions
