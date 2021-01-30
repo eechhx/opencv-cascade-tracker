@@ -22,6 +22,29 @@ There are many different types of tracking algorithms that are available through
 
 I used a Python virtual environment for package management. You can build and install OpenCV from source in the virtual environment (especially if you want a specific development branch or full control of compile options), or you can use `pip` locally in the `venv`. Packages included are shown in the `requirements.txt` file for reproducing the specific environment.
 
+The project directory tree will look similar to the following below, and might change depending on the arguments passed to the scripts.
+
+```
+.
+├── classifier.py
+├── bin
+│   └── createsamples.pl
+├── negative_images
+│   └── *.jpg / *.png
+├── positive_images
+│   └── *.jpg / *.png
+├── negatives.txt
+├── positives.txt
+├── requirements.txt
+├── samples
+│   └── *.vec
+├── stage_outputs
+│   ├── cascade.xml
+│   ├── params.xml
+│   └── stage*.xml
+├── tools
+└── venv
+```
 
 ## Image Scraping
 Go ahead and web scrape relevant negative images for training. Once you have a good amount, filter extensions that aren't `*.jpg` or `*.png` such as `*.gif`. Afterwards, we'll convert all the `*.png` images to `*jpg` using the following command:
@@ -73,10 +96,10 @@ Negative samples are taken from arbitrary images. These images must not contain 
 We need to create a whole bunch of image samples, and we'll be using OpenCV to augment these images. To create a training set as a collection of PNG images:
 
 ```
-opencv_createsamples -img ~/ocv-haar-cscade/positive_images/img1.png -bg ~/ocv-haar-cscade/negatives.txt -info ~/ocv-haar-cscade/annotations/annotations.lst -pngoutput -maxxangle 0.1 -maxyangle 0.1 -maxzangle 0.1
+opencv_createsamples -img ~/opencv-cascade-tracker/positive_images/img1.png -bg ~/opencv-cascade-tracker/negatives.txt -info ~/opencv-cascade-tracker/annotations/annotations.lst -pngoutput -maxxangle 0.1 -maxyangle 0.1 -maxzangle 0.1
 ```
 
-To augment a set of positive samples with negative samples, let's run the perl script that Naotoshi Seo wrote:
+But we need a whole bunch of these. To augment a set of positive samples with negative samples, let's run the perl script that Naotoshi Seo wrote:
 ```
 perl bin/createsamples.pl positives.txt negatives.txt samples 1500\
   "opencv_createsamples -bgcolor 0 -bgthresh 0 -maxxangle 1.1\
@@ -87,6 +110,8 @@ Merge all `*.vec` files into a single `samples.vec` file:
 ```
 python ./tools/mergevec.py -v samples/ -o samples.vec
 ```
+
+ Note: others have said that using artifical data vectors is not the best way to train a classifier. Personally, I have used this method and it worked fine for my use cases. However, you may approach this idea with a grain of salt and skip this step. 
 
 ## Training 
 There are two ways in OpenCV to train cascade classifier.
@@ -100,6 +125,7 @@ opencv_traincascade -data stage_outputs -vec samples.vec -bg negatives.txt\
   -numNeg 600 -w 50 -h 50 -mode ALL -precalcValBufSize 8192\
   -precalcIdxBufSize 8192
 ```
+Parameters for tuning `opencv_traincascade` are available in the [documentation](https://docs.opencv.org/4.4.0/dc/d88/tutorial_traincascade.html). `precalcValBufSize` and `precalcIdxBufSize` are buffer sizes. Currently set to 8192 Mb. If you have available memory, tune this parameter as training will be faster.
 
 Something important to note is that
 > vec-file has to contain `>= [numPos + (numStages - 1) * (1 - minHitRate) * numPos] + S`, where `S` is a count of samples from vec-file that can be recognized as background right away
