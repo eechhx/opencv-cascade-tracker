@@ -150,13 +150,13 @@ optional arguments:
   -d, --dir     specify directory of images to be classified
   -v, --vid     specify video to be classified
   -w, --cam     enable camera access for classification
-  -f, --fps     enable frames text
+  -f, --fps     enable frames text (TODO)
   -o, --circle  enable circle detection
   -z, --scale   decrease video scale by scale factor
   -t, --track   select tracking algorithm [KCF, CSRT, MEDIANFLOW]
 ```
 
-For example, to run a video through the classifier and save the output:
+When testing a tracking algorithm, **pass the scale parameter**. For example, to run a video through the classifier and save the output:
 ```
 ./classifier.py -v ~/video_input.MOV -s ~/video_output -z 2 -t KCF
 ```

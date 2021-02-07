@@ -68,7 +68,7 @@ def detect_circles(src):
     
     return img
 
-def tracking():
+def choose_tracker():
     OPENCV_TRACKERS = {
         'KCF': cv.TrackerKCF_create(),
         'CSRT': cv.TrackerCSRT_create(),
@@ -76,6 +76,24 @@ def tracking():
     }
     tracker = OPENCV_TRACKERS[args.track]
     return tracker
+
+def tracking():
+    pass
+
+def save(frame):
+    # Need dimensions of frame to determine proper video output
+    fourcc = cv.VideoWriter_fourcc(*'XVID')
+    height, width, channels = frame.shape
+    out = cv.VideoWriter(args.save + '.avi', fourcc, 30.0, (width, height))
+    return out
+
+def get_roi(frame):
+    # Get initial bounding box by running cascade detection on first frame
+    frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
+    cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
+    roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
+    return roi
 
 def scale(frame, scale_factor):
     height, width, channels = frame.shape
@@ -126,8 +144,6 @@ def dir_classifier():
 
 def vid_classifier():
     vid = cv.VideoCapture(args.vid)
-    fourcc = cv.VideoWriter_fourcc(*'XVID')
-
     if not vid.isOpened():
         print("Could not open video")
         sys.exit()
@@ -141,18 +157,11 @@ def vid_classifier():
         sys.exit()
 
     if args.save is not None and _ is True:
-        # Need dimensions of frame to get proper video output
-        height, width, channels = frame.shape
-        out = cv.VideoWriter(args.save + '.avi', fourcc, 30.0, (width, height))
+        out = save(frame=frame)
 
     if args.track is not None and _ is True:
-        # Get initial bounding box
-        frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
-        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
-        roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
-        #roi = (300, 50, 90, 350)
-        tracker = tracking()
+        roi = get_roi(frame)
+        tracker = choose_tracker()
         tracker.init(frame, roi)
  
     while(vid.isOpened()):
@@ -163,7 +172,7 @@ def vid_classifier():
         cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
 
         for (x, y, w, h) in cas_object:
-            roi = cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
+            cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
         
         if args.track is not None:
             ok, frame = vid.read()
@@ -180,10 +189,8 @@ def vid_classifier():
             frame = detect_circles(roi_circle)    
         
         cv.imshow('video', frame)
-
         if args.save is not None:
             out.write(frame)
-
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -201,7 +208,6 @@ def cam_classifier():
 
     while(cam.isOpened()):
         _, frame = cap.read()
-
         cam_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         cam_gray = cv.GaussianBlur(vid_gray, (3, 3), 0)
         cas_object = cascade.detectMultiScale(cam_gray)
@@ -210,7 +216,6 @@ def cam_classifier():
             cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
 
         cv2.imshow('camera', frame)
-
         if cv.waitKey(10) & 0xFF == ord('q'):
             break
     
