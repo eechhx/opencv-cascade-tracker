@@ -5,8 +5,8 @@ There are many different types of tracking algorithms that are available through
 
 ## Jump to Section
 
-* [Prerequisites](#prerequisites)
-* [Image Scraping](#image_scraping)
+* [Environment Setup](#environment-setup)
+* [Image Scraping](#image-scraping)
 * [Postive & Negative Image Sets](#positive-&-negative-image-sets)
 * [Positive Samples Image Augmentation](#positive-samples-image-augmentation)
 * [Training](#training)
@@ -15,12 +15,12 @@ There are many different types of tracking algorithms that are available through
 * [Acknowledgements](#acknowledgements)
 * [References](#references)
 
-## Prerequisites
-* Ubuntu 18.04 
+## Environment Setup
+* Ubuntu 18.04, 20.04  
 * OpenCV 4.4.0
 * OpenCV Contrib (branch parallel with OpenCV 4.4.0)
 
-I used a Python virtual environment for package management. You can build and install OpenCV from source in the virtual environment (especially if you want a specific development branch or full control of compile options), or you can use `pip` locally in the `venv`. Packages included are shown in the `requirements.txt` file for reproducing the specific environment.
+I used a Python virtual environment `venv` for package management. You can build and install OpenCV from source in the virtual environment (especially if you want a specific development branch or full control of compile options), or you can use `pip` locally in the `venv`. Packages included are shown in the `requirements.txt` file for reproducing the specific environment.
 
 The project directory tree will look similar to the following below, and might change depending on the arguments passed to the scripts.
 
