@@ -33,7 +33,7 @@ parser.add_argument("-i", "--img", metavar='', help="specify image to be classif
 parser.add_argument("-d", "--dir", metavar='', help="specify directory of images to be classified")
 parser.add_argument("-v", "--vid", metavar='', help="specify video to be classified")
 parser.add_argument("-w", "--cam", metavar='', help="enable camera access for classification")
-parser.add_argument("-f", "--fps", help="enable frames text", action="store_true")
+parser.add_argument("-f", "--fps", help="enable frames text (TODO)", action="store_true")
 parser.add_argument("-o", "--circle", help="enable circle detection", action="store_true")
 parser.add_argument("-z", "--scale", metavar='', help="decrease video scale by scale factor", type=int, default=1)
 parser.add_argument("-t", "--track", metavar='', help="select tracking algorithm [KCF, CSRT, MEDIANFLOW]", choices=['KCF', 'CSRT', 'MEDIANFLOW'])
@@ -93,7 +93,7 @@ def get_roi(frame):
     frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
     cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
     roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
-    return roi
+    return (roi, cas_object)
 
 def scale(frame, scale_factor):
     height, width, channels = frame.shape
@@ -160,16 +160,15 @@ def vid_classifier():
         out = save(frame=frame)
 
     if args.track is not None and _ is True:
-        roi = get_roi(frame)
+        process_frame = get_roi(frame)
         tracker = choose_tracker()
-        tracker.init(frame, roi)
+        tracker.init(frame, process_frame[0])
  
     while(vid.isOpened()):
         _ , frame = vid.read()
         frame = scale(frame, args.scale)
-        frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
-        cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
+        process_frame = get_roi(frame)
+        cas_object = process_frame[1]
 
         for (x, y, w, h) in cas_object:
             cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
