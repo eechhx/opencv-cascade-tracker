@@ -77,8 +77,16 @@ def choose_tracker():
     tracker = OPENCV_TRACKERS[args.track]
     return tracker
 
-def tracking():
-    pass
+def tracking(vid, tracker):
+    ok, frame = vid.read()
+    frame = scale(frame, args.scale)
+    ok, roi = tracker.update(frame)
+
+    if ok:
+        p1 = (int(roi[0]), int(roi[1]))
+        p2 = (int(roi[0] + roi[2]), int(roi[1] + roi[3]))
+        cv.rectangle(frame, p1, p2, (255,0,0), 2, 1)
+    return frame
 
 def save(frame):
     # Need dimensions of frame to determine proper video output
@@ -93,7 +101,15 @@ def get_roi(frame):
     frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
     cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
     roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
-    return (roi, cas_object)
+    return roi
+
+def get_cascade(frame):
+    frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
+    cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
+    for (x, y, w, h) in cas_object:
+        cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
+    return frame
 
 def scale(frame, scale_factor):
     height, width, channels = frame.shape
@@ -144,6 +160,7 @@ def dir_classifier():
 
 def vid_classifier():
     vid = cv.VideoCapture(args.vid)
+
     if not vid.isOpened():
         print("Could not open video")
         sys.exit()
@@ -162,26 +179,15 @@ def vid_classifier():
     if args.track is not None and _ is True:
         process_frame = get_roi(frame)
         tracker = choose_tracker()
-        tracker.init(frame, process_frame[0])
+        tracker.init(frame, process_frame)
  
     while(vid.isOpened()):
         _ , frame = vid.read()
         frame = scale(frame, args.scale)
-        process_frame = get_roi(frame)
-        cas_object = process_frame[1]
-
-        for (x, y, w, h) in cas_object:
-            cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
+        frame = get_cascade(frame)
         
         if args.track is not None:
-            ok, frame = vid.read()
-            frame = scale(frame, args.scale)
-            ok, roi = tracker.update(frame)
-
-            if ok:
-                p1 = (int(roi[0]), int(roi[1]))
-                p2 = (int(roi[0] + roi[2]), int(roi[1] + roi[3]))
-                cv.rectangle(frame, p1, p2, (255,0,0), 2, 1)
+            frame = tracking(vid=vid, tracker=tracker)
 
         if args.circle is True:
             roi_circle = frame[int(roi[1]):int(roi[1] + roi[3]), int(roi[0]):int(roi[0] + roi[2])]
@@ -200,8 +206,6 @@ def vid_classifier():
 
 def cam_classifier():
     cam = cv.VideoCapture(0)
-
-    # Check if the webcam is opened correctly
     if not cam.isOpened():
         raise IOError("Cannot access camera")
 
