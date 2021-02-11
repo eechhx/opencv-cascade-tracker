@@ -212,7 +212,7 @@ def cam_classifier():
     while(cam.isOpened()):
         _, frame = cap.read()
         cam_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        cam_gray = cv.GaussianBlur(vid_gray, (3, 3), 0)
+        cam_gray = cv.GaussianBlur(cam_gray, (3, 3), 0)
         cas_object = cascade.detectMultiScale(cam_gray)
 
         for (x, y, w, h) in cas_object:
