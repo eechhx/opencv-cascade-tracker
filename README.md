@@ -144,7 +144,7 @@ opencv_traincascade -data stage_outputs -vec samples.vec -bg negatives.txt\
   -precalcIdxBufSize 8192
 ```
 
-The first cascade worked relatively well. However, performance suffered in different lighting conditions. As a result, I trained a second cascade with a larger dataset that included differen't lighting conditions..
+The first cascade worked relatively well. However, performance suffered in different lighting conditions. As a result, I trained a second cascade with a larger dataset that included different lighting conditions..
 
 ```
 opencv_traincascade -data stage_outputs -vec samples.vec -bg negatives.txt\
@@ -159,6 +159,29 @@ Something important to note is that
 > vec-file has to contain `>= [numPos + (numStages - 1) * (1 - minHitRate) * numPos] + S`, where `S` is a count of samples from vec-file that can be recognized as background right away
 
 `numPos` and `numNeg` are the number of positive and negative samples we use in training for every classifier stage. Therefore, `numPos` should be relatively less than our total number of positive samples, taking into consideration the number of stages we'll be running. 
+
+```
+===== TRAINING 0-stage =====
+<BEGIN
+POS count : consumed   1960 : 1960
+NEG count : acceptanceRatio    1000 : 1
+Precalculation time: 106
++----+---------+---------+
+|  N |    HR   |    FA   |
++----+---------+---------+
+|   1|        1|        1|
++----+---------+---------+
+|   2|        1|        1|
++----+---------+---------+
+|   3|        1|        1|
++----+---------+---------+
+|   4|        1|    0.568|
++----+---------+---------+
+|   5|  0.99949|    0.211|
++----+---------+---------+
+END>
+Training until now has taken 0 days 1 hours 3 minutes 47 seconds.
+```
 
 Each row of the training output for each stage represents a feature that's being trained. HR stands for Hit Ratio and FA stands for False Alarm. Note that if a training stage only has a few features (e.g. N = 1 ~ 3), that can suggest that the training data you used was not optimized.
 
