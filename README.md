@@ -185,6 +185,8 @@ Training until now has taken 0 days 1 hours 3 minutes 47 seconds.
 
 Each row of the training output for each stage represents a feature that's being trained. HR stands for Hit Ratio and FA stands for False Alarm. Note that if a training stage only has a few features (e.g. N = 1 ~ 3), that can suggest that the training data you used was not optimized.
 
+**Note**: You can always pause / stop your cascade training and just build your final `cascade.xml` with the training stages that you've completed thus far. Just run your `opencv_traincascade` script and change the `-numStages` argument up to whichever completed stage you want, while *keeping every other parameter the same*. Your `cascade.xml` will be created.
+
 ## Testing Cascade
 To test how well our cascade performs, run the `classifier.py` script. 
 
