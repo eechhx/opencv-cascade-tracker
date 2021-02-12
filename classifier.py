@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import argparse as ap
 import numpy as np
 import cv2 as cv
@@ -100,6 +100,8 @@ def get_roi(frame):
     frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
     cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
+    if len(cas_object) == 0:
+        return []
     roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
     return roi
 
@@ -177,9 +179,13 @@ def vid_classifier():
         out = save(frame=frame)
 
     if args.track is not None and _ is True:
-        process_frame = get_roi(frame)
+        cas_roi = get_roi(frame)
+        while not cas_roi:
+            _, frame = vid.read()
+            frame = scale(frame, args.scale)
+            cas_roi = get_roi(frame)
         tracker = choose_tracker()
-        tracker.init(frame, process_frame)
+        tracker.init(frame, cas_roi)
  
     while(vid.isOpened()):
         _ , frame = vid.read()
