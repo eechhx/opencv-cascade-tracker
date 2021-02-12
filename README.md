@@ -12,6 +12,7 @@ There are many different types of tracking algorithms that are available through
 * [Training](#training)
 * [Testing Cascade](#testing-cascade)
 * [Video Conversions](#video-conversions)
+* [Contributing](#contributing)
 * [Acknowledgements](#acknowledgements)
 * [References](#references)
 
@@ -24,6 +25,8 @@ There are many different types of tracking algorithms that are available through
 As a clarification, the listed Ubuntu variants are for quick easy installs, depending on whether you're using `apt` or `pip`. To specifically get the OpenCV version you want, you will need to build from source (especially when you want to downgrade packages). I mainly used a Python virtual environment `venv` for package management. You can build and install OpenCV from source in the virtual environment (especially if you want a specific development branch or full control of compile options), or you can use `pip` locally in the `venv`. Packages included are shown in the `requirements.txt` file for reproducing the specific environment.
 
 The project directory tree will look similar to the following below, and might change depending on the arguments passed to the scripts.
+
+<blockquote>
 
 ```
 .
@@ -46,6 +49,8 @@ The project directory tree will look similar to the following below, and might c
 ├── tools
 └── venv
 ```
+
+</blockquote>
 
 ## Image Scraping
 Go ahead and web scrape relevant negative images for training. Once you have a good amount, filter extensions that aren't `*.jpg` or `*.png` such as `*.gif`. Afterwards, we'll convert all the `*.png` images to `*jpg` using the following command:
@@ -97,10 +102,13 @@ Negative samples are taken from arbitrary images. These images must not contain 
 We need to create a whole bunch of image samples, and we'll be using `OpenCV 3.x.x` to augment these images. [These tools / functionalities were disabled during legacy C API](https://github.com/opencv/opencv/issues/13231#issuecomment-440577461), so we'll need to first be on a downgraded version of OpenCV, and once we have our trained cascade model, we can upgrade back to `4.x.x`. As mentioned in the link earlier, most modern approaches use deep learning approaches. However having used Cascades, they still their applications! Anyways, to create a training set as a collection of PNG images:
 
 ```
-opencv_createsamples -img ~/opencv-cascade-tracker/positive_images/img1.png -bg ~/opencv-cascade-tracker/negatives.txt -info ~/opencv-cascade-tracker/annotations/annotations.lst -pngoutput -maxxangle 0.1 -maxyangle 0.1 -maxzangle 0.1
+opencv_createsamples -img ~/opencv-cascade-tracker/positive_images/img1.png\
+-bg ~/opencv-cascade-tracker/negatives.txt -info ~/opencv-cascade-tracker/annotations/annotations.lst\
+-pngoutput -maxxangle 0.1 -maxyangle 0.1 -maxzangle 0.1
 ```
 
 But we need a whole bunch of these. To augment a set of positive samples with negative samples, let's run the perl script that Naotoshi Seo wrote:
+
 ```
 perl bin/createsamples.pl positives.txt negatives.txt samples 1500\
   "opencv_createsamples -bgcolor 0 -bgthresh 0 -maxxangle 1.1\
@@ -187,6 +195,10 @@ Each row of the training output for each stage represents a feature that's being
 
 **Note**: You can always pause / stop your cascade training and just build your final `cascade.xml` with the training stages that you've completed thus far. Just run your `opencv_traincascade` script and change the `-numStages` argument up to whichever completed stage you want, while *keeping every other parameter the same*. Your `cascade.xml` will be created.
 
+```
+opencv_traincascade -data stage_outputs -vec samples.vec -bg negatives.txt  -numStages 22 -minHitRate 0.9993 -maxFalseAlarmRate 0.5 -numPos 1960  -numNeg 1000 -w 50 -h 50 -mode ALL -precalcValBufSize 16384 -precalcIdxBufSize 16384
+```
+
 ## Testing Cascade
 To test how well our cascade performs, run the `classifier.py` script. 
 
@@ -220,6 +232,9 @@ The `classifier.py` automatically saves output videos as `*.avi` (fourcc: XVID).
 ```
 ffmpeg -i video_input.avi -vcodec libx264 -crf 30 video_output.mp4
 ```
+
+## Contributing
+Pull requests are welcomed.
 
 ## Acknowledgements
 For releasing their tools and notes under MIT license.
