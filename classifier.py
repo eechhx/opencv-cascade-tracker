@@ -86,6 +86,7 @@ def tracking(vid, tracker):
         p1 = (int(roi[0]), int(roi[1]))
         p2 = (int(roi[0] + roi[2]), int(roi[1] + roi[3]))
         cv.rectangle(frame, p1, p2, (255,0,0), 2, 1)
+        cpoint_circle = cv.circle(frame, (int(roi[0]+(roi[2]/2)), int(roi[1]+(roi[3]/2))), 3, (255,0,0), 3)
     return frame
 
 def save(frame):
@@ -111,6 +112,7 @@ def get_cascade(frame):
     cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
     for (x, y, w, h) in cas_object:
         cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
+        cpoint_circle = cv.circle(frame, (int(x+(w/2)), int(y+(h/2))), 3, (0,0,255), 3)
     return frame
 
 def scale(frame, scale_factor):
@@ -129,6 +131,7 @@ def img_classifier():
 
     for (x, y, w, h) in cas_object:
         roi = cv.rectangle(img, (x,y), (x+w, y+h), (0,0,255), 2)
+        cpoint_circle = cv.circle(img, (int(x+(w/2)), int(y+(h/2))), 3, (0,0,255), 3)
 
         if args.circle is True:
             roi = img[y:y+h, x:x+w]
@@ -144,11 +147,11 @@ def dir_classifier():
         img = cv.imread(os.path.join(args.dir, filename))
         if img is not None:
             img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            #img_gray = cv.equalizeHist(img_gray)
             cas_object = cascade.detectMultiScale(img_gray, minNeighbors=10)
 
             for (x, y, w, h) in cas_object:
                 cv.rectangle(img, (x,y), (x+w, y+h), (0,0,255), 2)
+                cpoint_circle = cv.circle(img, (int(x+(w/2)), int(y+(h/2))), 3, (0,0,255), 3)
 
                 if args.circle is True:
                     roi = img[y:y+h, x:x+w]
