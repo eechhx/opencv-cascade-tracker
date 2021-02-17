@@ -85,8 +85,8 @@ def tracking(vid, tracker):
     if ok:
         p1 = (int(roi[0]), int(roi[1]))
         p2 = (int(roi[0] + roi[2]), int(roi[1] + roi[3]))
-        cv.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-        cpoint_circle = cv.circle(frame, (int(roi[0]+(roi[2]/2)), int(roi[1]+(roi[3]/2))), 3, (255,0,0), 3)
+        cv.rectangle(frame, p1, p2, (0,255,0), 2, 1)
+        cpoint_circle = cv.circle(frame, (int(roi[0]+(roi[2]/2)), int(roi[1]+(roi[3]/2))), 3, (0,255,0), 3)
     return frame
 
 def save(frame):
@@ -199,6 +199,7 @@ def vid_classifier():
             frame = tracking(vid=vid, tracker=tracker)
 
         if args.circle is True:
+            roi = get_roi(frame)
             roi_circle = frame[int(roi[1]):int(roi[1] + roi[3]), int(roi[0]):int(roi[0] + roi[2])]
             frame = detect_circles(roi_circle)    
         
@@ -217,20 +218,12 @@ def cam_classifier():
     cam = cv.VideoCapture(0)
     if not cam.isOpened():
         raise IOError("Cannot access camera")
-
     while(cam.isOpened()):
         _, frame = cap.read()
-        cam_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        cam_gray = cv.GaussianBlur(cam_gray, (3, 3), 0)
-        cas_object = cascade.detectMultiScale(cam_gray)
-
-        for (x, y, w, h) in cas_object:
-            cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
-
+        frame = get_cascade(frame)
         cv2.imshow('camera', frame)
         if cv.waitKey(10) & 0xFF == ord('q'):
-            break
-    
+            break    
     cam.release()
     cv.destroyAllWindows()
 
