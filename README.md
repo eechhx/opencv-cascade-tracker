@@ -136,7 +136,18 @@ You need to remove all `*.vec` files with size 0 in your `samples` directory. Si
 find . -type f -empty -delete
 ```
 
- Note: others have said that using artifical data vectors is not the best way to train a classifier. Personally, I have used this method and it worked fine for my use cases. However, you may approach this idea with a grain of salt and skip this step. 
+ Note: others have said that using artifical data vectors is not the best way to train a classifier. Personally, I have used this method and it worked fine for my use cases. However, you may approach this idea with a grain of salt and skip this step. If you want to hand select your ROI, you may use OpenCV's `opencv_annotation` function to select your regions of interest in a directory of images.
+
+If you don't want to use artifical data, you will need to have your images and the coordinates of your region of interest. You can then use `opencv_createsamples` to merge all these images into a single vector `.vec` file and use this for training instead. You will need to supply an `info.dat` file that contains the image instance and the object coordinates in `(x, y, width, height)`. Your `info.dat` should look something like below, and can also be created using `opencv_annotation` or other customized data piplining methodologies you will need to implement. 
+
+<blockquote>
+
+```
+img/img1.jpg  1  140 100 45 45
+img/img2.jpg  2  100 200 50 50   50 30 25 25
+```
+
+</blockquote>
 
 ## Training 
 There are two ways in OpenCV to train cascade classifier.

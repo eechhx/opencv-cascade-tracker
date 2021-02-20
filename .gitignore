@@ -6,6 +6,8 @@ annotations/
 stage_outputs/
 negative_images/
 positive_images/
+positive_images_old/
+positive_images_gray/
 .vscode/
 .venv
 *.MOV
