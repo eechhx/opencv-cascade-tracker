@@ -100,7 +100,7 @@ def get_roi(frame):
     # Get initial bounding box by running cascade detection on first frame
     frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
-    cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
+    cas_object = cascade.detectMultiScale(frame_gray)
     if len(cas_object) == 0:
         return []
     roi = (cas_object[0][0], cas_object[0][1], cas_object[0][2], cas_object[0][3])
@@ -109,7 +109,7 @@ def get_roi(frame):
 def get_cascade(frame):
     frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     frame_gray = cv.GaussianBlur(frame_gray, (3, 3), 0)
-    cas_object = cascade.detectMultiScale(frame_gray, minNeighbors=10)
+    cas_object = cascade.detectMultiScale(frame_gray)
     for (x, y, w, h) in cas_object:
         cv.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
         cpoint_circle = cv.circle(frame, (int(x+(w/2)), int(y+(h/2))), 3, (0,0,255), 3)
@@ -127,7 +127,7 @@ def img_classifier():
     img = cv.imread(args.img, cv.IMREAD_COLOR)
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     #img_gray = cv.equalizeHist(img_gray)
-    cas_object = cascade.detectMultiScale(img_gray, minNeighbors=3, minSize=(200, 200))
+    cas_object = cascade.detectMultiScale(img_gray)
 
     for (x, y, w, h) in cas_object:
         roi = cv.rectangle(img, (x,y), (x+w, y+h), (0,0,255), 2)
@@ -147,7 +147,7 @@ def dir_classifier():
         img = cv.imread(os.path.join(args.dir, filename))
         if img is not None:
             img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            cas_object = cascade.detectMultiScale(img_gray, minNeighbors=10)
+            cas_object = cascade.detectMultiScale(img_gray)
 
             for (x, y, w, h) in cas_object:
                 cv.rectangle(img, (x,y), (x+w, y+h), (0,0,255), 2)
