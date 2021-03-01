@@ -47,7 +47,7 @@ The project directory tree will look similar to the following below, and might c
 │   ├── params.xml
 │   └── stage*.xml
 ├── tools
-│   ├── imgs_from_vid.py
+│   ├── bbox_from_vid.py
 │   └── mergevec.py
 └── venv
 ```
