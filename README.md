@@ -9,6 +9,7 @@ There are many different types of tracking algorithms that are available through
 * [Image Scraping](#image-scraping)
 * [Postive & Negative Image Sets](#positive-&-negative-image-sets)
 * [Positive Samples Image Augmentation](#positive-samples-image-augmentation)
+* [CSV Bounding Box Coordinates](#csv-bounding-box-coordinates)
 * [Training](#training)
 * [Testing Cascade](#testing-cascade)
 * [Video Conversions](#video-conversions)
@@ -150,6 +151,28 @@ img/img2.jpg  2  100 200 50 50   50 30 25 25
 ```
 
 </blockquote>
+
+## CSV Bounding Box Coordinates
+In `tools`, there is a script called `bbox_from_vid.py` which can be used to generate the `(x_min, y_min, x_max, y_max)` coordinates, where `min` is from top left point of the bounding box and `max` is the bottom right point. It uses OpenCV's tracking algorithms to track the object selected. 
+
+```
+usage: bbox_from_vid.py [-h] [-v] [-o] [-c] [-z]
+
+Get bbox / ROI coords and training images from videos
+
+optional arguments:
+  -h, --help    show this help message and exit
+  -v, --vid     specify video to be loaded
+  -o, --center  select bounding box / ROI from center point
+  -c, --csv     export CSV file with bbox coords
+  -z, --scale   decrease video scale by scale factor
+```
+
+For example, if you wanted to save the bounding box coordinates of a tracked object:
+
+```
+./bbox_from_vid.py -v video_input.avi -c vid_bbox_coords.csv
+```
 
 ## Training 
 There are two ways in OpenCV to train cascade classifier.
