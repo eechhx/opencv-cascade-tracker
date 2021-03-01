@@ -80,11 +80,13 @@ if __name__ == '__main__':
                 cv.rectangle(frame, p1, p2, (0,255,0), 2, 1)
                 cpoint_circle = cv.circle(frame, (int(roi[0]+(roi[2]/2)), int(roi[1]+(roi[3]/2))), 3, (0,255,0), 3)
                 csv_data = np.array([[int(roi[0]), int(roi[1]), int(roi[0] + roi[2]), int(roi[1] + roi[3]), int(frame_number)]])
+                # If your object is stationary, and you just want to train different lighting conditions
+                # csv_data = np.array([[441, 328, 612, 482, int(frame_number)]])
                 csv_values = np.append(csv_values, csv_data, 0)
                 create_csv(csv_values)
             else:
                 # Tracking failure
-                cv2.putText(frame, "Tracking Failure", (100,80), cv.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
+                cv.putText(frame, "Tracking Failure", (100,80), cv.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 
             # Display result
             cv.imshow("Video", frame)
